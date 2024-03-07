@@ -64,6 +64,24 @@ namespace UnityEngine.InputSystem
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Lock"",
+                    ""type"": ""Button"",
+                    ""id"": ""117982e7-8f15-4ebc-88d1-a27a92bdc857"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Fuuko"",
+                    ""type"": ""Button"",
+                    ""id"": ""de5de1c7-c5d5-4183-880a-578c70c2436d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -306,6 +324,50 @@ namespace UnityEngine.InputSystem
                     ""processors"": """",
                     ""groups"": ""XR"",
                     ""action"": ""Fire"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5f3570aa-6ded-492f-bdca-13c117547e19"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Lock"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ba20e3b0-a7ea-414b-af15-c36cf89c10e6"",
+                    ""path"": ""<Gamepad>/rightShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Lock"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""11f2e25b-9805-45b9-946e-d86bbaad593f"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Fuuko"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""edd532da-b1d2-421f-bdfe-256075e98528"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Fuuko"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -897,6 +959,8 @@ namespace UnityEngine.InputSystem
             m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
             m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
             m_Player_Fire = m_Player.FindAction("Fire", throwIfNotFound: true);
+            m_Player_Lock = m_Player.FindAction("Lock", throwIfNotFound: true);
+            m_Player_Fuuko = m_Player.FindAction("Fuuko", throwIfNotFound: true);
             // UI
             m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
             m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -974,6 +1038,8 @@ namespace UnityEngine.InputSystem
         private readonly InputAction m_Player_Look;
         private readonly InputAction m_Player_Jump;
         private readonly InputAction m_Player_Fire;
+        private readonly InputAction m_Player_Lock;
+        private readonly InputAction m_Player_Fuuko;
         public struct PlayerActions
         {
             private @PlayerInputActions m_Wrapper;
@@ -982,6 +1048,8 @@ namespace UnityEngine.InputSystem
             public InputAction @Look => m_Wrapper.m_Player_Look;
             public InputAction @Jump => m_Wrapper.m_Player_Jump;
             public InputAction @Fire => m_Wrapper.m_Player_Fire;
+            public InputAction @Lock => m_Wrapper.m_Player_Lock;
+            public InputAction @Fuuko => m_Wrapper.m_Player_Fuuko;
             public InputActionMap Get() { return m_Wrapper.m_Player; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -1003,6 +1071,12 @@ namespace UnityEngine.InputSystem
                 @Fire.started += instance.OnFire;
                 @Fire.performed += instance.OnFire;
                 @Fire.canceled += instance.OnFire;
+                @Lock.started += instance.OnLock;
+                @Lock.performed += instance.OnLock;
+                @Lock.canceled += instance.OnLock;
+                @Fuuko.started += instance.OnFuuko;
+                @Fuuko.performed += instance.OnFuuko;
+                @Fuuko.canceled += instance.OnFuuko;
             }
 
             private void UnregisterCallbacks(IPlayerActions instance)
@@ -1019,6 +1093,12 @@ namespace UnityEngine.InputSystem
                 @Fire.started -= instance.OnFire;
                 @Fire.performed -= instance.OnFire;
                 @Fire.canceled -= instance.OnFire;
+                @Lock.started -= instance.OnLock;
+                @Lock.performed -= instance.OnLock;
+                @Lock.canceled -= instance.OnLock;
+                @Fuuko.started -= instance.OnFuuko;
+                @Fuuko.performed -= instance.OnFuuko;
+                @Fuuko.canceled -= instance.OnFuuko;
             }
 
             public void RemoveCallbacks(IPlayerActions instance)
@@ -1205,6 +1285,8 @@ namespace UnityEngine.InputSystem
             void OnLook(InputAction.CallbackContext context);
             void OnJump(InputAction.CallbackContext context);
             void OnFire(InputAction.CallbackContext context);
+            void OnLock(InputAction.CallbackContext context);
+            void OnFuuko(InputAction.CallbackContext context);
         }
         public interface IUIActions
         {
