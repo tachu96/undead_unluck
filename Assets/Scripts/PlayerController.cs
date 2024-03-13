@@ -31,9 +31,6 @@ public class PlayerController : MonoBehaviour
 
     private bool grounded;
 
-    [Header("Camera Reference")]
-    [SerializeField] private ThirdPersonCam thirdPersonMainCamera;
-
     [Header("Fuuko Related References")]
     [SerializeField] private GameObject fuuko;
     [SerializeField] private FuukoBehaviour fuukoBehaviour;
@@ -58,12 +55,8 @@ public class PlayerController : MonoBehaviour
         playerInputActions.Player.Move.performed += Move_performed;
         playerInputActions.Player.Move.canceled += Move_canceled;
 
-        playerInputActions.Player.Lock.started += Lock_started;
-        playerInputActions.Player.Lock.canceled += Lock_canceled;
-
         playerInputActions.Player.Fuuko.started += Fuuko_started;
     }
-
     private void Fuuko_started(InputAction.CallbackContext context)
     {
         Debug.Log("fuuko in range" + fuukoInRange + " carryingFuuko" + carryingFuuko);
@@ -78,16 +71,6 @@ public class PlayerController : MonoBehaviour
             carryingFuuko = false;
             ReleaseFuuko();
         }
-    }
-
-    private void Lock_canceled(InputAction.CallbackContext context)
-    {
-        thirdPersonMainCamera.CombatCamUnlock();
-    }
-
-    private void Lock_started(InputAction.CallbackContext context)
-    {
-        thirdPersonMainCamera.CombatCamLock();
     }
 
     #region InputSubscriptions
