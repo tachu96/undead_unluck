@@ -37,9 +37,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform grabPoint;
     [SerializeField] private Transform releasePoint;
     [SerializeField] private GameObject carriedFuuko;
+    [SerializeField] private float fuukoCallTimerMax;
 
     private bool fuukoInRange;
     private bool carryingFuuko;
+    private bool calledFuuko=false;
+    private bool runFuukoCallTimer;
+    private float fuukoCallTimer;
 
     // Code related to main unity functions goes here
     #region UnityFunctions
@@ -56,10 +60,13 @@ public class PlayerController : MonoBehaviour
         playerInputActions.Player.Move.canceled += Move_canceled;
 
         playerInputActions.Player.Fuuko.started += Fuuko_started;
+        playerInputActions.Player.Fuuko.canceled += Fuuko_canceled;
     }
+
+
+
     private void Fuuko_started(InputAction.CallbackContext context)
     {
-        Debug.Log("fuuko in range" + fuukoInRange + " carryingFuuko" + carryingFuuko);
         //if Fuuko is near, lets try to carry Fuuko
         if (fuukoInRange)
         {
@@ -71,6 +78,16 @@ public class PlayerController : MonoBehaviour
             carryingFuuko = false;
             ReleaseFuuko();
         }
+
+        if (!carryingFuuko)
+        {
+            runFuukoCallTimer = true;
+        }
+    }
+
+    private void Fuuko_canceled(InputAction.CallbackContext context)
+    {
+        fuukoCallTimerReset();
     }
 
     #region InputSubscriptions
@@ -115,6 +132,10 @@ public class PlayerController : MonoBehaviour
             rb.drag = 0f;
         }
 
+        if (runFuukoCallTimer) {
+            FuukoCallControl();
+        }
+
         SpeedControl();
         JumpCheck();
     }
@@ -125,9 +146,6 @@ public class PlayerController : MonoBehaviour
     }
 
     #endregion
-
-
-
 
     private void MovePlayer()
     {
@@ -172,20 +190,51 @@ public class PlayerController : MonoBehaviour
 
     public void FuukoEnteredRange() {
         fuukoInRange = true;
+        calledFuuko = false;
+        fuukoBehaviour.CancelCallFuukoToPlayer();
+        fuukoCallTimerReset();
     }
     public void FuukoExitedRange()
     {
         fuukoInRange = false;
     }
     private void CarryFuuko() {
+        calledFuuko = false;
+        fuukoCallTimerReset();
         fuukoBehaviour.PrepareForCarry();
         carriedFuuko.SetActive(true);
     }
 
     private void ReleaseFuuko() {
+
+        fuukoCallTimerReset();
+        calledFuuko = false;
+
         carriedFuuko.SetActive(false);
         fuuko.transform.position = releasePoint.position;
         fuuko.transform.rotation = releasePoint.rotation;
         fuukoBehaviour.PrepareForRelease();
+    }
+
+    private void FuukoCallControl() {
+        fuukoCallTimer += Time.deltaTime;
+
+        if (fuukoCallTimer>=fuukoCallTimerMax) {
+            fuukoCallTimerReset();
+            calledFuuko =!calledFuuko;
+
+            if (calledFuuko)
+            {
+                fuukoBehaviour.CallFuukoToPlayer();
+            }
+            else {
+                fuukoBehaviour.CancelCallFuukoToPlayer();
+            }
+        }
+    }
+
+    private void fuukoCallTimerReset() { 
+        fuukoCallTimer = 0;
+        runFuukoCallTimer = false;
     }
 }

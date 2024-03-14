@@ -14,7 +14,7 @@ public class FuukoDetectionTrigger : MonoBehaviour
         }
     }
 
-    void OntriggerExit(Collider other)
+    void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Fuuko"))
         {
