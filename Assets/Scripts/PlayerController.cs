@@ -5,6 +5,19 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    //Animator variables
+    private const string ANIM_LIGHTATTACK1_BOOL = "lightAttack1";
+    private const string ANIM_LIGHTATTACK2_BOOL = "lightAttack2";
+    private const string ANIM_LIGHTATTACK3_BOOL = "lightAttack3";
+    private const string ANIM_HEAVYATTACK1_BOOL = "heavyAttack1";
+    private const string ANIM_HEAVYATTACK2_BOOL = "heavyAttack2";
+    private const string ANIM_HEAVYATTACK3_BOOL = "heavyAttack3";
+
+
+    //Animator states
+    private const string ANIMSTATE_LIGHTATTACK1 = "LightAttack1";
+    private const string ANIMSTATE_LIGHTATTACK2 = "LightAttack2";
+    private const string ANIMSTATE_LIGHTATTACK3 = "LightAttack3";
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed;
@@ -45,6 +58,14 @@ public class PlayerController : MonoBehaviour
     private bool runFuukoCallTimer;
     private float fuukoCallTimer;
 
+    [Header("LightAttacks")]
+    [SerializeField] private Animator animator;
+    [SerializeField] private static int numberOfClicks=0;
+    [SerializeField] private float maxComboDelay;
+
+    private float lastClickedTime;
+
+
     // Code related to main unity functions goes here
     #region UnityFunctions
     private void Awake()
@@ -61,9 +82,30 @@ public class PlayerController : MonoBehaviour
 
         playerInputActions.Player.Fuuko.started += Fuuko_started;
         playerInputActions.Player.Fuuko.canceled += Fuuko_canceled;
+
+        playerInputActions.Player.LightAttack.started += LightAttack_started;
     }
 
+    private void LightAttack_started(InputAction.CallbackContext context)
+    {
+        lastClickedTime = Time.time;
+        numberOfClicks++;
+        if (numberOfClicks==1) {
+            animator.SetBool(ANIM_LIGHTATTACK1_BOOL, true);
+        }
+        numberOfClicks = Mathf.Clamp(numberOfClicks, 0, 3);
 
+        if (numberOfClicks >= 2&& animator.GetCurrentAnimatorStateInfo(0).normalizedTime>0.7f && animator.GetCurrentAnimatorStateInfo(0).IsName(ANIMSTATE_LIGHTATTACK1)) { 
+            animator.SetBool(ANIM_LIGHTATTACK1_BOOL, false);
+            animator.SetBool(ANIM_LIGHTATTACK2_BOOL, true);
+        }
+
+        if (numberOfClicks >= 3 && animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f && animator.GetCurrentAnimatorStateInfo(0).IsName(ANIMSTATE_LIGHTATTACK2))
+        {
+            animator.SetBool(ANIM_LIGHTATTACK2_BOOL, false);
+            animator.SetBool(ANIM_LIGHTATTACK3_BOOL, true);
+        }
+    }
 
     private void Fuuko_started(InputAction.CallbackContext context)
     {
@@ -122,6 +164,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        Debug.Log(numberOfClicks);
+
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f * 0.2f, groundMask);
         if (grounded)
         {
@@ -135,6 +179,8 @@ public class PlayerController : MonoBehaviour
         if (runFuukoCallTimer) {
             FuukoCallControl();
         }
+
+        HandleAttackCombo();
 
         SpeedControl();
         JumpCheck();
@@ -236,5 +282,27 @@ public class PlayerController : MonoBehaviour
     private void fuukoCallTimerReset() { 
         fuukoCallTimer = 0;
         runFuukoCallTimer = false;
+    }
+
+    private void HandleAttackCombo() {
+        if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f && animator.GetCurrentAnimatorStateInfo(0).IsName(ANIMSTATE_LIGHTATTACK1))
+        {
+            animator.SetBool(ANIM_LIGHTATTACK1_BOOL, false);
+        }
+        if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f && animator.GetCurrentAnimatorStateInfo(0).IsName(ANIMSTATE_LIGHTATTACK2))
+        {
+            animator.SetBool(ANIM_LIGHTATTACK2_BOOL, false);
+        }
+        if (animator.GetCurrentAnimatorStateInfo(0).normalizedTime > 0.7f && animator.GetCurrentAnimatorStateInfo(0).IsName(ANIMSTATE_LIGHTATTACK3))
+        {
+            animator.SetBool(ANIM_LIGHTATTACK3_BOOL, false);
+            numberOfClicks = 0;
+        }
+
+        if (Time.time-lastClickedTime>maxComboDelay) { 
+            Debug.Log("AttackDelayMissed");
+            numberOfClicks = 0;
+        }
+
     }
 }
