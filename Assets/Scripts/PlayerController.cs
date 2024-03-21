@@ -9,15 +9,13 @@ public class PlayerController : MonoBehaviour
     private const string ANIM_LIGHTATTACK1_BOOL = "lightAttack1";
     private const string ANIM_LIGHTATTACK2_BOOL = "lightAttack2";
     private const string ANIM_LIGHTATTACK3_BOOL = "lightAttack3";
-    private const string ANIM_HEAVYATTACK1_BOOL = "heavyAttack1";
-    private const string ANIM_HEAVYATTACK2_BOOL = "heavyAttack2";
-    private const string ANIM_HEAVYATTACK3_BOOL = "heavyAttack3";
 
 
     //Animator states
     private const string ANIMSTATE_LIGHTATTACK1 = "LightAttack1";
     private const string ANIMSTATE_LIGHTATTACK2 = "LightAttack2";
     private const string ANIMSTATE_LIGHTATTACK3 = "LightAttack3";
+
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed;
@@ -65,6 +63,10 @@ public class PlayerController : MonoBehaviour
 
     private float lastClickedTime;
 
+    [Header("Combo Hitboxes LightAttack")]
+    public GameObject lightAttackHitbox1;
+    public GameObject lightAttackHitbox2;
+    public GameObject lightAttackHitbox3;
 
     // Code related to main unity functions goes here
     #region UnityFunctions
@@ -160,11 +162,15 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         readyToJump = true;
+
+        // Ensure all hitboxes are initially disabled
+        lightAttackHitbox1.SetActive(false);
+        lightAttackHitbox2.SetActive(false);
+        lightAttackHitbox3.SetActive(false);
     }
 
     private void Update()
     {
-        Debug.Log(numberOfClicks);
 
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f * 0.2f, groundMask);
         if (grounded)
@@ -300,9 +306,37 @@ public class PlayerController : MonoBehaviour
         }
 
         if (Time.time-lastClickedTime>maxComboDelay) { 
-            Debug.Log("AttackDelayMissed");
             numberOfClicks = 0;
         }
 
+    }
+
+    public void ActivateHitboxLightAttack1() 
+    {
+        lightAttackHitbox1.SetActive(true);
+    }
+
+    public void DeactivateHitboxLightAttack1() {
+        lightAttackHitbox1.SetActive(false);
+    }
+
+    //atack 2
+    public void ActivateHitboxLightAttack2()
+    {
+        lightAttackHitbox2.SetActive(true);
+    }
+    public void DeactivateHitboxLightAttack2()
+    {
+        lightAttackHitbox2.SetActive(false);
+    }
+    //attack 3
+    public void ActivateHitboxLightAttack3()
+    {
+        lightAttackHitbox3.SetActive(true);
+    }
+
+    public void DeactivateHitboxLightAttack3()
+    {
+        lightAttackHitbox3.SetActive(false);
     }
 }
