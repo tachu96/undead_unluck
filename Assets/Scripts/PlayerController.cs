@@ -5,6 +5,33 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+
+
+    private static PlayerController instance;
+
+    // Public static property to access the single instance of the class
+    public static PlayerController Instance
+    {
+        get
+        {
+            // If the instance hasn't been created yet, create it
+            if (instance == null)
+            {
+                instance = FindObjectOfType<PlayerController>();
+
+                if (instance == null)
+                {
+                    Debug.LogWarning("No instance of PlayerController found in the scene. Creating a new instance.");
+                    GameObject obj = new GameObject("PlayerController");
+                    instance = obj.AddComponent<PlayerController>();
+                }
+            }
+            return instance;
+        }
+    }
+
+
+
     //Animator variables
     private const string ANIM_LIGHTATTACK1_BOOL = "lightAttack1";
     private const string ANIM_LIGHTATTACK2_BOOL = "lightAttack2";
