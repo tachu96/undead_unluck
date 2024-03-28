@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IDamageable
 {
 
 
@@ -36,7 +37,7 @@ public class PlayerController : MonoBehaviour
     private const string ANIM_LIGHTATTACK1_BOOL = "lightAttack1";
     private const string ANIM_LIGHTATTACK2_BOOL = "lightAttack2";
     private const string ANIM_LIGHTATTACK3_BOOL = "lightAttack3";
-
+    private const string ANIM_HIT_TRIGGER = "Hit";
 
     //Animator states
     private const string ANIMSTATE_LIGHTATTACK1 = "LightAttack1";
@@ -54,6 +55,14 @@ public class PlayerController : MonoBehaviour
     private float horizontalInput;
     private float verticalInput;
     Vector3 moveDirection;
+
+    private Vector3 lastHitPosition;
+    private float lastKnockbackForce;
+    private float lastKnockbackForceUp;
+
+    [Header("Audio References")]
+    [SerializeField] private AudioClip AndyHit;
+    private AudioSource audioSource;
 
     [Header("Jump")]
     [SerializeField] private float jumpForce;
@@ -189,7 +198,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         readyToJump = true;
-
+        audioSource=GetComponent<AudioSource>();
         // Ensure all hitboxes are initially disabled
         lightAttackHitbox1.SetActive(false);
         lightAttackHitbox2.SetActive(false);
@@ -365,5 +374,33 @@ public class PlayerController : MonoBehaviour
     public void DeactivateHitboxLightAttack3()
     {
         lightAttackHitbox3.SetActive(false);
+    }
+
+    public void TakeDamage(int damage, float hitStunDuration, float knockbackForce, float knockbackForceUp, Vector3 hitPosition)
+    {
+
+        if (hitStunDuration > 0f)
+        {
+            animator.SetTrigger(ANIM_HIT_TRIGGER);
+            audioSource.PlayOneShot(AndyHit);
+        }
+
+        lastHitPosition = hitPosition;
+        lastKnockbackForce = knockbackForce;
+        lastKnockbackForceUp = knockbackForceUp;
+
+        ApplyKnockback(lastHitPosition, lastKnockbackForce, lastKnockbackForceUp);
+    }
+
+    private void ApplyKnockback(Vector3 hitPosition, float knockbackForce, float knockbackForceUp)
+    {
+        Vector3 knockbackDirection = transform.position - hitPosition;
+        knockbackDirection.y = 0f;
+
+        // Apply knockback force with x and z components
+        rb.AddForce(knockbackDirection.normalized * knockbackForce, ForceMode.Impulse);
+
+        // Apply knockback force upwards
+        rb.AddForce(Vector3.up * knockbackForceUp, ForceMode.Impulse);
     }
 }

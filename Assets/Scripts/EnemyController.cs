@@ -5,11 +5,16 @@ using UnityEngine.UI;
 using System;
 using TMPro;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 
 public class EnemyController : MonoBehaviour
 {
+    //Animator States
+    private const string ANIM_ATTACK_STATE_NAME="CrossPunch";
+
     //Animator variables
     private const string ANIM_HITSTUNBOOL = "Hitstun";
+    private const string ANIM_PUNCH_TRIGGER = "Punch";
 
     [Header("Values")]
     public float maxHealth = 100f;
@@ -34,6 +39,7 @@ public class EnemyController : MonoBehaviour
 
     [Header("References")]
     public Image healthBar;
+    public GameObject attackHitBox;
 
     private Animator animator;
     private float currentHealth;
@@ -49,6 +55,10 @@ public class EnemyController : MonoBehaviour
 
     private Transform currentTargetTransform;
     private bool randomTargetSelectionPerformed;
+
+    [Header("Attacking Stuff")]
+    private bool isAttacking;
+
 
     private void Start()
     {
@@ -68,6 +78,7 @@ public class EnemyController : MonoBehaviour
         RunStunTimer();
         AwarenessCheck();
         TargetSelection();
+        AttackCheck();
         DeterminePatrolling();
     }
 
@@ -174,7 +185,6 @@ public class EnemyController : MonoBehaviour
 
     private void TargetSelection()
     {
-
         if (canSeeFuuko && canSeePlayer)
         {
             if (!randomTargetSelectionPerformed) {
@@ -192,11 +202,11 @@ public class EnemyController : MonoBehaviour
                     Debug.Log("Random Target selected: Fuuko");
                 }
                 navMeshAgent.stoppingDistance = stoppingDistanceNavmesh;
-                if (navMeshAgent.enabled)
-                {
-                    navMeshAgent.SetDestination(currentTargetTransform.position);
-                }
                 randomTargetSelectionPerformed = true;
+            }
+            if (navMeshAgent.enabled)
+            {
+                navMeshAgent.SetDestination(currentTargetTransform.position);
             }
         }
         else if (canSeePlayer)
@@ -232,7 +242,8 @@ public class EnemyController : MonoBehaviour
     }
     private void DeterminePatrolling()
     {
-        patrolling = currentTargetTransform == null;
+        //we patrol if we have no target and we are not attacking and we are not stunned
+        patrolling = currentTargetTransform == null && !isAttacking && !isStunned;
         if (patrolling)
         {
             if (navMeshAgent.remainingDistance < 0.01f)
@@ -266,5 +277,29 @@ public class EnemyController : MonoBehaviour
 
         // Set the destination to the selected patrol point
         navMeshAgent.SetDestination(patrolPoints[currentPatrolIndex].position);
+    }
+    private void AttackCheck() {
+
+        //is attacking is based on if the attacking animation is being played
+        isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsName(ANIM_ATTACK_STATE_NAME);
+
+        if (currentTargetTransform != null)
+        {
+            //measure the distance to know if we are close enough to perform an attack, and if we are not attacking already
+            
+            if ((Vector3.Distance(transform.position, currentTargetTransform.position) < stoppingDistanceNavmesh) && !isAttacking) {
+                animator.SetTrigger(ANIM_PUNCH_TRIGGER);
+            }
+        }
+    }
+
+    public void EnableHitbox() 
+    { 
+        attackHitBox.SetActive(true);
+    }
+
+    public void DisableHitbox()
+    {
+        attackHitBox.SetActive(false);
     }
 }
